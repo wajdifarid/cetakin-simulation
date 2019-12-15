@@ -2,16 +2,20 @@ import simpy
 import numpy
 from config_experiment import (
     OPEN_DURATION_MINUTES,
-    PRINTER_CAPACITY,
+    IS_PRINTER_HYBRID,
     COMPUTER_CAPACITY,
     PRINT_DURATION_SCALE_MINUTES,
     EDIT_DURATION_SCALE_MINUTES,
     ONLINE_CUSTOMER_INTERARRIVAL_SCALE_MINUTES,
     OFFLINE_CUSTOMER_INTERARRIVAL_SCALE_MINUTES,
-    SIMULATION_NUMBER
+    HYBRID_PRINTER_CAPACITY,
+    SIMULATION_NUMBER,
+    ONLINE_PRINTER_CAPACITY,
+    OFFLINE_PRINTER_CAPACITY,
 )
 from customer import OnlineCustomer, OfflineCustomer
 from resource import MonitoredResource
+
 
 def average(array):
     return sum(array) / len(array)
@@ -25,15 +29,24 @@ def run_simulation(number_of_simulation):
 
     for i in range(number_of_simulation):
         env = simpy.Environment()
-        printer = MonitoredResource(env, capacity=PRINTER_CAPACITY)
+
+        printers = (
+            [MonitoredResource(env, capacity=HYBRID_PRINTER_CAPACITY)]
+            if IS_PRINTER_HYBRID
+            else [
+                MonitoredResource(env, capacity=ONLINE_PRINTER_CAPACITY),
+                MonitoredResource(env, capacity=OFFLINE_PRINTER_CAPACITY),
+            ]
+        )
         computer = MonitoredResource(env, capacity=COMPUTER_CAPACITY)
         offline_current_time = 0
         offline_customer_number = 0
+        offline_printer = printers[0] if IS_PRINTER_HYBRID else printers[1]
         while offline_current_time < OPEN_DURATION_MINUTES:
             OfflineCustomer(
                 env,
                 "Customer %d" % offline_customer_number,
-                printer,
+                offline_printer,
                 offline_current_time,
                 computer,
             )
@@ -44,8 +57,9 @@ def run_simulation(number_of_simulation):
 
         current_time = 0
         customer_number = 0
+        online_printer = printers[0]
         while current_time < OPEN_DURATION_MINUTES:
-            OnlineCustomer(env, "Customer %d" % customer_number, printer, current_time)
+            OnlineCustomer(env, "Customer %d" % customer_number, online_printer, current_time)
             current_time += numpy.random.exponential(
                 ONLINE_CUSTOMER_INTERARRIVAL_SCALE_MINUTES
             )
@@ -56,7 +70,7 @@ def run_simulation(number_of_simulation):
         service_rate = customer_served / OPEN_DURATION_MINUTES
         service_rates.append(service_rate)
         customer_serveds.append(customer_served)
-        server_utilizations.append(printer.utilization)
+        server_utilizations.append(printers[0].utilization)
 
     return (
         average(service_rates),
@@ -64,8 +78,11 @@ def run_simulation(number_of_simulation):
         average(server_utilizations),
     )
 
+
 if __name__ == "__main__":
-    (service_rate, customer_served, server_utilization,) = run_simulation(SIMULATION_NUMBER)
+    (service_rate, customer_served, server_utilization,) = run_simulation(
+        SIMULATION_NUMBER
+    )
 
     with open("result.txt", "a") as f:
         f.write("Service Rate: " + str(service_rate) + "\n")
