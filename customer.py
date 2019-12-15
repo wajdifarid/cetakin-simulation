@@ -8,7 +8,6 @@ class Customer(object):
         self.name = name
         self.printers = printers
         self.arrival_time = arrival_time
-        self.print_duration = numpy.random.exponential(PRINT_DURATION_SCALE_MINUTES)
     
     def print_documents(self, arrived_at):
         with self.printers.request() as req:
@@ -17,7 +16,7 @@ class Customer(object):
             print("%s starting to print at %s" % (self.name, self.env.now))
 
             # printing
-            yield self.env.timeout(self.print_duration)
+            yield self.env.timeout(numpy.random.exponential(PRINT_DURATION_SCALE_MINUTES))
             print("%s leaving the printer at %s" % (self.name, self.env.now))
 
 class OnlineCustomer(Customer):
@@ -31,7 +30,7 @@ class OnlineCustomer(Customer):
         yield self.env.timeout(self.arrival_time)
 
         # Request one of its printing spots
-        print("%s arriving at %d" % (self.name, self.env.now))
+        # print("%s arriving at %d" % (self.name, self.env.now))
         arrived_at = self.env.now
         yield self.env.process(self.print_documents(arrived_at))
 
@@ -51,7 +50,7 @@ class OfflineCustomer(Customer):
         # Request one of its computer spots
         arrived_at_computer_at = self.env.now
         yield self.env.process(self.edit(arrived_at_computer_at))
-        print("%s arriving at %d" % (self.name, self.env.now))
+        # print("%s arriving at %d" % (self.name, self.env.now))
 
         arrived_at_printer_at = self.env.now
         yield self.env.process(self.print_documents(arrived_at_printer_at))
@@ -60,9 +59,9 @@ class OfflineCustomer(Customer):
         with self.computers.request() as req:
             yield req
             # editing
-            print("%s starting to edit at %s" % (self.name, self.env.now))
+            # print("%s starting to edit at %s" % (self.name, self.env.now))
 
-            yield self.env.timeout(self.print_duration)
-            print("%s leaving the computer at %s" % (self.name, self.env.now))
+            yield self.env.timeout(self.edit_duration)
+            # print("%s leaving the computer at %s" % (self.name, self.env.now))
 
     
