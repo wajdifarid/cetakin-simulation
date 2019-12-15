@@ -13,11 +13,11 @@ class Customer(object):
         with self.printers.request() as req:
             yield req
 
-            print("%s starting to print at %s" % (self.name, self.env.now))
+            # print("%s starting to print at %s" % (self.name, self.env.now))
 
             # printing
             yield self.env.timeout(numpy.random.exponential(PRINT_DURATION_SCALE_MINUTES))
-            print("%s leaving the printer at %s" % (self.name, self.env.now))
+            # print("%s leaving the printer at %s" % (self.name, self.env.now))
 
 class OnlineCustomer(Customer):
     def __init__(self, env, name, printers, arrival_time):
