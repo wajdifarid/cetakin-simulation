@@ -31,6 +31,9 @@ def run_cetakin_simulation(number_of_simulation):
     online_printer_queue_probabilities = []
     offline_printer_queue_probabilities = []
     computer_queue_probabilities = []
+    average_online_printer_queue_durations = []
+    average_offline_printer_queue_durations = []
+    average_computer_queue_durations = []
 
     for i in range(number_of_simulation):
         env = simpy.Environment()
@@ -79,6 +82,9 @@ def run_cetakin_simulation(number_of_simulation):
         computer_queue_probabilities.append(computer.queue_probability)
         offline_printer_queue_probabilities.append(offline_printer.queue_probability)
         online_printer_queue_probabilities.append(online_printer.queue_probability)
+        average_computer_queue_durations.append(computer.queue_duration)
+        average_online_printer_queue_durations.append(online_printer.queue_duration)
+        average_offline_printer_queue_durations.append(offline_printer.queue_duration)
 
     return (
         average(service_rates),
@@ -89,6 +95,10 @@ def run_cetakin_simulation(number_of_simulation):
         average(offline_printer_queue_probabilities),
         average(online_printer_queue_probabilities),
         average(computer_queue_probabilities),
+        average(average_computer_queue_durations),
+        average(average_online_printer_queue_durations),
+        average(average_offline_printer_queue_durations),
+
     )
 
 
@@ -100,6 +110,8 @@ def run_hybrid_simulation(number_of_simulation):
     computer_utilizations = []
     printer_queue_probabilities = []
     computer_queue_probabilities = []
+    average_printer_queue_durations = []
+    average_computer_queue_durations = []
 
     for i in range(number_of_simulation):
         env = simpy.Environment()
@@ -147,6 +159,8 @@ def run_hybrid_simulation(number_of_simulation):
         computer_utilizations.append(computer.utilization)
         computer_queue_probabilities.append(computer.queue_probability)
         printer_queue_probabilities.append(printers.queue_probability)
+        average_computer_queue_durations.append(computer.queue_duration)
+        average_printer_queue_durations.append(printers.queue_duration)
 
     return (
         average(service_rates),
@@ -155,6 +169,8 @@ def run_hybrid_simulation(number_of_simulation):
         average(computer_utilizations),
         average(computer_queue_probabilities),
         average(printer_queue_probabilities),
+        average(average_computer_queue_durations),
+        average(average_printer_queue_durations)
     )
 
 
@@ -167,6 +183,8 @@ if __name__ == "__main__":
             computer_utilization,
             computer_queue_probability,
             printer_queue_probability,
+            average_computer_queue_duration,
+            average_printer_queue_duration
         ) = run_hybrid_simulation(SIMULATION_NUMBER)
         with open("result.txt", "a") as f:
             f.write("Service Rate: " + str(service_rate) + "\n")
@@ -181,6 +199,8 @@ if __name__ == "__main__":
             f.write(
                 "Probabilitas queue Printer : " + str(printer_queue_probability) + "\n"
             )
+            f.write("Rata-rata waktu tunggu antrian komputer : " + str(average_computer_queue_duration) + "\n")
+            f.write("Rata-rata waktu tunggu antrian printer : " + str(average_printer_queue_duration) + "\n")
             f.write("\n")
 
     else:
@@ -193,6 +213,9 @@ if __name__ == "__main__":
             offline_printer_queue_probability,
             online_printer_queue_probability,
             computer_queue_probability,
+            average_computer_queue_duration,
+            average_online_printer_queue_duration,
+            average_offline_printer_queue_duration,
         ) = run_cetakin_simulation(SIMULATION_NUMBER)
 
         with open("result.txt", "a") as f:
@@ -208,4 +231,7 @@ if __name__ == "__main__":
             f.write("Probabilitas Antri Printer Offline : " + str(offline_printer_queue_probability) + "\n")
             f.write("Probabilitas Antri Printer Online : " + str(online_printer_queue_probability) + "\n")
             f.write("Probabilitas Antri Komputer : " + str(computer_queue_probability) + "\n")
+            f.write("Rata-rata Waktu tunggu Antrian Komputer : " + str(average_computer_queue_duration) + "\n")
+            f.write("Rata-rata waktu tunggu Antri printer online : " + str(average_online_printer_queue_duration) + "\n")
+            f.write("Rata-rata waktu tunggu Antri printer offline : " + str(average_offline_printer_queue_duration) + "\n")
             f.write("\n")
